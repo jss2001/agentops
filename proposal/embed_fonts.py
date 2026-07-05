@@ -9,8 +9,8 @@ from pathlib import Path
 
 sys.stdout.reconfigure(encoding='utf-8')
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "One_Console_AI_제안서_v6_UI.pptx"
-DST = HERE / "One_Console_AI_제안서_v6_UI_embedded.pptx"
+SRC = HERE / "One_Console_AI_제안서_v8.pptx"
+DST = HERE / "One_Console_AI_제안서_v8_embedded.pptx"
 
 FONT_DIR = Path(r"C:\Users\tjdtl\AppData\Local\Microsoft\Windows\Fonts")
 REG = FONT_DIR / "Pretendard-Regular.ttf"
