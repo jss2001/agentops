@@ -534,7 +534,7 @@ box(s, ML, Inches(2.3), Inches(6.35), Inches(3.15), INK)
 code = [
     ("# 형상 가져오기", GRAY),
     ("GET  /agent/prompt/{bot_type}", BLUE_D),
-    ("GET  /agent/ragaas-config/{bot_type}", BLUE_D),
+    ("GET  /agent/rag-config/{bot_type}", BLUE_D),
     ("", WHITE),
     ("# 대화 호출 — 형상(Prompt+검색) 자동 적용", GRAY),
     ("POST /agent/chat", WHITE),

@@ -72,8 +72,14 @@ else:  # notesSz가 self-close가 아니면 sldSz 뒤에
     pres = re.sub(r"(</p:sldSz>|<p:sldSz[^/]*/>)", r"\1" + font_lst, pres, count=1)
 data["ppt/presentation.xml"] = pres.encode("utf-8")
 
-# 5) 다시 zip으로 저장
-with zipfile.ZipFile(DST, "w", zipfile.ZIP_DEFLATED) as z:
+# 5) 다시 zip으로 저장 (대상이 PowerPoint에 열려 잠긴 경우 대체 이름으로)
+try:
+    zf = zipfile.ZipFile(DST, "w", zipfile.ZIP_DEFLATED)
+except PermissionError:
+    DST = DST.with_name(DST.stem + "_new" + DST.suffix)
+    print(f"[안내] 대상 파일이 열려 있어 대체 이름으로 저장합니다: {DST.name}")
+    zf = zipfile.ZipFile(DST, "w", zipfile.ZIP_DEFLATED)
+with zf as z:
     for n, b in data.items():
         z.writestr(n, b)
 

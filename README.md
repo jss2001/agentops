@@ -31,7 +31,7 @@ run.bat
 | Method | Path | 설명 |
 |---|---|---|
 | GET | `/agent/prompt/{bot_type}` | System Prompt 조회 |
-| GET | `/agent/ragaas-config/{bot_type}` | 벡터 검색 설정 조회 |
+| GET | `/agent/rag-config/{bot_type}` | 벡터 검색 설정 조회 |
 | POST | `/agent/chat` | 형상(Prompt+검색) 적용 대화 호출 |
 | POST | `/agent/feedback` | 답변 피드백 회귀 (운영 신호) |
 | PUT | `/itcen/agents/{bot_type}/prompt` | 프롬프트 버전 등록/개정 |

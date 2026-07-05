@@ -104,7 +104,7 @@ function stagePills(current){
   const idx = current==='완료' ? 99 : PIPE_STAGES.indexOf(current);
   return `<div class="stages">${PIPE_STAGES.map((s,i)=>
     `<span class="stage-pill ${i<idx?'done':i===idx?'now':''}">${s}</span>${i<3?'<span class="stage-arrow">▸</span>':''}`
-  ).join('')}<span class="stage-arrow">▸</span><span class="stage-pill ${current==='완료'?'done':''}">RAGaaS 동기화</span></div>`;
+  ).join('')}<span class="stage-arrow">▸</span><span class="stage-pill ${current==='완료'?'done':''}">RAG 동기화</span></div>`;
 }
 const offlineCard = () => `
 <div class="view"><div class="offline">
@@ -204,7 +204,7 @@ VIEWS.dashboard = async () => {
 
   <div class="grid" style="grid-template-columns:1fr 1fr">
     <div class="card">
-      <div class="card-head"><div><h3>지식 파이프라인 현황</h3><div class="sub">RAGaaS Index 동기화 상태</div></div><a class="link" data-go="knowledge">전체 보기 ${I('chev')}</a></div>
+      <div class="card-head"><div><h3>지식 파이프라인 현황</h3><div class="sub">RAG Index 동기화 상태</div></div><a class="link" data-go="knowledge">전체 보기 ${I('chev')}</a></div>
       <div class="card-pad"><div class="pipe">
         ${sources.slice(0,4).map(p=>{
           const [ic,tint] = SRC_ICON[p.type]||['pdf','#888'];
@@ -240,7 +240,7 @@ VIEWS.knowledge = async () => {
   return `
 <div class="view">
   <div class="page-head">
-    <div><h1>RAG 데이터 파이프라인</h1><p>Confluence · PDF · Excel · 이미지를 <b>추출 → 전처리 → 가공 → 적재</b>로 정제해 RAGaaS Index와 동기화합니다. 각 소스의 [동기화] 버튼으로 파이프라인을 실제 실행해 보세요.</p></div>
+    <div><h1>RAG 데이터 파이프라인</h1><p>Confluence · PDF · Excel · 이미지를 <b>추출 → 전처리 → 가공 → 적재</b>로 정제해 RAG Index와 동기화합니다. 각 소스의 [동기화] 버튼으로 파이프라인을 실제 실행해 보세요.</p></div>
     <div class="head-actions"><button class="ghost-btn primary" id="addSourceBtn">${I('plus')} 데이터 소스 연결</button></div>
   </div>
 
@@ -262,7 +262,7 @@ VIEWS.knowledge = async () => {
         </div>
       </div>
       <div class="card">
-        <div class="card-head"><div><h3>RAGaaS Index 현황</h3><div class="sub">Agent Config의 검색 범위로 연결됩니다</div></div></div>
+        <div class="card-head"><div><h3>RAG Index 현황</h3><div class="sub">Agent Config의 검색 범위로 연결됩니다</div></div></div>
         <table class="tbl">
           <thead><tr><th>Index</th><th>청크</th><th>사용 봇</th></tr></thead>
           <tbody>${indexes.map(x=>`<tr>
@@ -328,7 +328,7 @@ function openSourceModal(){
           <select class="inp" id="srcType"><option value="confluence">Confluence</option><option value="pdf">PDF</option><option value="excel">Excel</option><option value="image">이미지</option></select></div>
         <div class="form-row"><label>문서 수 <small>(시뮬레이션)</small></label><input class="inp" id="srcDocs" type="number" value="24"/></div>
       </div>
-      <div class="form-row"><label>적재 대상 RAGaaS Index</label><input class="inp" id="srcIndex" placeholder="예: product-manual"/>
+      <div class="form-row"><label>적재 대상 RAG Index</label><input class="inp" id="srcIndex" placeholder="예: product-manual"/>
         <p class="hint">같은 index_name을 쓰는 봇의 검색 범위에 즉시 반영됩니다.</p></div>
     </div>
     <div class="modal-foot"><span></span>
@@ -358,7 +358,7 @@ VIEWS.agents = async () => {
   <div class="grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px">
     ${[['① 에이전트 생성','bot_type 키를 정하고 이름·도메인·담당자를 등록','bot','#4b5cff'],
        ['② System Prompt','말투와 역할 정의 — 버전으로 형상관리','git','#8b7cff'],
-       ['③ 벡터 검색 설정','RAGaaS Index와 검색 정책으로 지식 범위 결정','search','#12b886']]
+       ['③ 벡터 검색 설정','RAG Index와 검색 정책으로 지식 범위 결정','search','#12b886']]
     .map(s=>`<div class="kpi" style="display:flex;gap:14px;align-items:flex-start">
       <div class="kpi-ico" style="margin:0;background:linear-gradient(135deg,${s[3]},${s[3]}cc)">${I(s[2])}</div>
       <div><b style="font-size:14px">${s[0]}</b><p class="mini" style="margin-top:4px;line-height:1.5">${s[1]}</p></div>
@@ -443,7 +443,7 @@ function openWizard(){
           <textarea class="inp" id="wPrompt">${esc(wiz.prompt||PROMPT_TMPL)}</textarea>
           <p class="hint">가공 파이프라인과 동일한 출력 규칙(한국어·서론/결론/추측 금지·건조하고 명확한 문장)이 기본 포함되어 있습니다.</p></div>`
       : `
-        <div class="form-row"><label>RAGaaS Index <small>지식 범위</small></label>
+        <div class="form-row"><label>RAG Index <small>지식 범위</small></label>
           <input class="inp mono" id="wIndex" placeholder="hr-knowledge" value="${esc(wiz.cfg.index_name||'')}"/>
           <p class="hint">Knowledge 메뉴의 Index 이름과 일치해야 검색이 동작합니다. (예: hr-knowledge, sales-docs, product-manual, security-policy, dev-wiki)</p></div>
         <div class="form-2">
@@ -481,11 +481,11 @@ function openWizard(){
         if(!wiz.prompt.trim()) return toast('System Prompt를 입력하세요','err');
         wiz.step=3; return render();
       }
-      if(!wiz.cfg.index_name) return toast('RAGaaS Index를 입력하세요','err');
+      if(!wiz.cfg.index_name) return toast('RAG Index를 입력하세요','err');
       try{
         await api('/itcen/agents',{method:'POST', body: wiz.agent});
         await api(`/itcen/agents/${wiz.agent.bot_type}/prompt`,{method:'PUT', body:{content:wiz.prompt, message:'최초 등록 (위저드)', author:wiz.agent.owner||'admin'}});
-        await api(`/itcen/agents/${wiz.agent.bot_type}/ragaas-config`,{method:'PUT', body: wiz.cfg});
+        await api(`/itcen/agents/${wiz.agent.bot_type}/rag-config`,{method:'PUT', body: wiz.cfg});
         closeModal();
         toast(`'${wiz.agent.bot_type}' 형상 3/3 등록 완료 — 즉시 호출 가능`);
         state.selBot = wiz.agent.bot_type;
@@ -584,18 +584,18 @@ VIEWS.search = async () => {
   try{ await loadAgents(); }catch(e){ return offlineCard(); }
   if(!state.selBot) return `<div class="view"><div class="offline"><h3>등록된 에이전트가 없습니다</h3><p>먼저 Agent Config에서 에이전트를 생성하세요.</p></div></div>`;
   let cfg;
-  try{ cfg = await api(`/agent/ragaas-config/${state.selBot}`); }
+  try{ cfg = await api(`/agent/rag-config/${state.selBot}`); }
   catch(e){ cfg = {index_name:'', top_k:5, similarity_threshold:0.72, bm25_weight:0.3, rerank:true, citation_required:true, pii_masking:true, multi_query:false}; }
   const idx = await api('/itcen/knowledge/indexes');
   return `
 <div class="view">
   <div class="page-head">
-    <div><h1>벡터 검색 설정</h1><p>bot_type의 지식 범위(RAGaaS Index)와 검색 정책을 중앙에서 관리합니다. 저장 즉시 <span class="mono">GET /agent/ragaas-config/{bot_type}</span> 과 <span class="mono">POST /agent/chat</span> 동작에 반영됩니다.</p></div>
+    <div><h1>벡터 검색 설정</h1><p>bot_type의 지식 범위(RAG Index)와 검색 정책을 중앙에서 관리합니다. 저장 즉시 <span class="mono">GET /agent/rag-config/{bot_type}</span> 과 <span class="mono">POST /agent/chat</span> 동작에 반영됩니다.</p></div>
     <div class="head-actions">${botSelect('botSel')}</div>
   </div>
   <div class="toolbar">
     <span class="key-badge">bot_type: ${esc(state.selBot)}</span>
-    <span class="chip gray">외부 제공: <span class="mono" style="margin-left:4px">GET /agent/ragaas-config/${esc(state.selBot)}</span></span>
+    <span class="chip gray">외부 제공: <span class="mono" style="margin-left:4px">GET /agent/rag-config/${esc(state.selBot)}</span></span>
   </div>
 
   <div class="grid" style="grid-template-columns:1.3fr 1fr">
@@ -603,7 +603,7 @@ VIEWS.search = async () => {
       <div class="card-head"><div><h3>검색 파라미터</h3></div>
         <button class="ghost-btn primary" id="cfgSave" style="height:34px">${I('check')} 저장 · 즉시 반영</button></div>
       <div class="cfg-row">
-        <div class="stack"><h5>RAGaaS Index (지식 범위)</h5><p>Knowledge 파이프라인이 적재한 인덱스를 선택합니다</p></div>
+        <div class="stack"><h5>RAG Index (지식 범위)</h5><p>Knowledge 파이프라인이 적재한 인덱스를 선택합니다</p></div>
         <select class="inp" id="cIndex" style="min-width:200px">
           ${idx.map(x=>`<option ${x.index_name===cfg.index_name?'selected':''}>${esc(x.index_name)}</option>`).join('')}
         </select>
@@ -674,7 +674,7 @@ BIND.search = () => {
   preview();
   $('#cfgSave').addEventListener('click', async ()=>{
     try{
-      await api(`/itcen/agents/${state.selBot}/ragaas-config`, {method:'PUT', body: body()});
+      await api(`/itcen/agents/${state.selBot}/rag-config`, {method:'PUT', body: body()});
       toast(`'${state.selBot}' 검색 설정 저장 — /agent/chat 에 즉시 반영`);
     }catch(e){ toast(e.message,'err'); }
   });
@@ -848,13 +848,13 @@ VIEWS.api = async () => {
   const host = location.origin;
   const eps = [
     ['GET','/agent/prompt/{bot_type}','System Prompt 조회'],
-    ['GET','/agent/ragaas-config/{bot_type}','RAGaaS 검색 설정 조회'],
+    ['GET','/agent/rag-config/{bot_type}','RAG 검색 설정 조회'],
     ['POST','/agent/chat','형상 적용 대화 호출'],
     ['POST','/agent/feedback','답변 피드백 등록'],
     ['GET','/itcen/agents','에이전트 목록'],
     ['POST','/itcen/agents','① 에이전트 생성'],
     ['PUT','/itcen/agents/{bot_type}/prompt','② Prompt 등록/개정'],
-    ['PUT','/itcen/agents/{bot_type}/ragaas-config','③ 검색 설정 등록'],
+    ['PUT','/itcen/agents/{bot_type}/rag-config','③ 검색 설정 등록'],
     ['POST','/itcen/knowledge/sources/{id}/sync','RAG 파이프라인 실행'],
     ['POST','/itcen/ops/jobs/cleanup','멈춘 작업 정리 (4h+)'],
   ];
@@ -878,7 +878,7 @@ VIEWS.api = async () => {
         <div class="card-head"><div><h3>호출 예시</h3><div class="sub">외부 Agent 개발 코드에서</div></div></div>
         <div class="card-pad"><div class="code"><span class="c"># 1) 형상 가져오기</span>
 curl ${esc(host)}/agent/prompt/<span class="y">hr-assistant</span>
-curl ${esc(host)}/agent/ragaas-config/<span class="y">hr-assistant</span>
+curl ${esc(host)}/agent/rag-config/<span class="y">hr-assistant</span>
 
 <span class="c"># 2) 대화 호출</span>
 curl -X POST ${esc(host)}/agent/chat \\

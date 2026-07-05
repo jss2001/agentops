@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS agents(
 CREATE TABLE IF NOT EXISTS prompts(
   id INTEGER PRIMARY KEY AUTOINCREMENT, bot_type TEXT NOT NULL, version TEXT NOT NULL,
   content TEXT NOT NULL, message TEXT, author TEXT, created_at TEXT);
-CREATE TABLE IF NOT EXISTS ragaas_configs(
+CREATE TABLE IF NOT EXISTS rag_configs(
   bot_type TEXT PRIMARY KEY, index_name TEXT NOT NULL, top_k INTEGER DEFAULT 5,
   similarity_threshold REAL DEFAULT 0.72, bm25_weight REAL DEFAULT 0.3,
   rerank INTEGER DEFAULT 1, citation_required INTEGER DEFAULT 1,
@@ -146,7 +146,7 @@ def seed():
         ]
         for c in cfgs:
             con.execute(
-                "INSERT INTO ragaas_configs(bot_type,index_name,top_k,similarity_threshold,bm25_weight,"
+                "INSERT INTO rag_configs(bot_type,index_name,top_k,similarity_threshold,bm25_weight,"
                 "rerank,citation_required,pii_masking,multi_query,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?)",
                 (*c, ago(days=4)))
 
@@ -236,8 +236,8 @@ class PromptUpdate(BaseModel):
     message: str = Field("변경 사항", description="변경 메시지 (커밋 메시지처럼 기록됨)")
     author: str = Field("admin", description="작성자")
 
-class RagaasConfigUpdate(BaseModel):
-    index_name: str = Field(..., description="RAGaaS 인덱스 이름", examples=["hr-knowledge"])
+class RagConfigUpdate(BaseModel):
+    index_name: str = Field(..., description="RAG 인덱스 이름", examples=["hr-knowledge"])
     top_k: int = Field(5, ge=1, le=20, description="검색 문서 수 (Top-K)")
     similarity_threshold: float = Field(0.72, ge=0, le=1, description="유사도 임계값 — 미만 문서는 컨텍스트에서 제외")
     bm25_weight: float = Field(0.3, ge=0, le=1, description="하이브리드 가중치(BM25 비중, 나머지는 Vector)")
@@ -272,7 +272,7 @@ class FeedbackRequest(BaseModel):
 class SourceCreate(BaseModel):
     name: str = Field(..., description="데이터 소스 이름", examples=["신제품 매뉴얼 PDF"])
     type: str = Field(..., description="confluence | pdf | excel | image", examples=["pdf"])
-    index_name: str = Field(..., description="적재할 RAGaaS 인덱스", examples=["product-manual"])
+    index_name: str = Field(..., description="적재할 RAG 인덱스", examples=["product-manual"])
     docs: int = Field(10, description="문서 수(시뮬레이션용)")
 
 # ------------------------------------------------------------
@@ -281,7 +281,7 @@ class SourceCreate(BaseModel):
 TAGS = [
     {"name": "agent", "description": "**외부 제공 API** — 플랫폼에 등록한 형상(Prompt·검색 설정)을 AI Agent 개발에서 REST로 자유롭게 호출합니다. `bot_type`으로 봇을 식별합니다."},
     {"name": "itcen-config", "description": "**Agent Config 관리** — bot_type 하나로 ①에이전트 ②System Prompt ③벡터 검색 설정을 묶어 중앙 형상관리합니다."},
-    {"name": "itcen-knowledge", "description": "**Knowledge (RAG 파이프라인)** — Confluence·PDF·Excel·이미지를 추출→전처리→가공→적재로 정제해 RAGaaS Index와 동기화합니다."},
+    {"name": "itcen-knowledge", "description": "**Knowledge (RAG 파이프라인)** — Confluence·PDF·Excel·이미지를 추출→전처리→가공→적재로 정제해 RAG Index와 동기화합니다."},
     {"name": "itcen-ops", "description": "**운영 대시보드** — 답변 로그·피드백·사용량을 모니터링하고, 4시간 이상 멈춘 작업을 강제 종료합니다."},
 ]
 
@@ -323,12 +323,12 @@ def get_agent_prompt(bot_type: str = FPath(..., description="봇 고유 key id",
     return {"bot_type": bot_type, "version": p["version"], "system_prompt": p["content"],
             "updated_at": p["created_at"], "author": p["author"]}
 
-@app.get("/agent/ragaas-config/{bot_type}", tags=["agent"], summary="RAGaaS 검색 설정 조회",
+@app.get("/agent/rag-config/{bot_type}", tags=["agent"], summary="RAG 검색 설정 조회",
          description="bot_type에 등록된 벡터 검색 설정(지식 범위·검색 정책)을 반환합니다.")
-def get_agent_ragaas_config(bot_type: str = FPath(..., description="봇 고유 key id", examples=["hr-assistant"])):
+def get_agent_rag_config(bot_type: str = FPath(..., description="봇 고유 key id", examples=["hr-assistant"])):
     _agent_or_404(bot_type)
     with db() as con:
-        c = con.execute("SELECT * FROM ragaas_configs WHERE bot_type=?", (bot_type,)).fetchone()
+        c = con.execute("SELECT * FROM rag_configs WHERE bot_type=?", (bot_type,)).fetchone()
     if not c:
         raise HTTPException(404, f"'{bot_type}'에 등록된 검색 설정이 없습니다.")
     d = dict(c)
@@ -363,7 +363,7 @@ def _retrieve(index_name: str, query: str, cfg: dict):
 
 @app.post("/agent/chat", tags=["agent"], response_model=ChatResponse, summary="Agent 대화 호출",
           description=(
-              "bot_type의 형상(System Prompt + RAGaaS 검색 설정)을 적용해 답변을 생성합니다.\n\n"
+              "bot_type의 형상(System Prompt + RAG 검색 설정)을 적용해 답변을 생성합니다.\n\n"
               "- 등록된 지식 인덱스에서 검색 → 근거 문서와 함께 한국어 답변 반환\n"
               "- `citation_required`가 켜져 있고 근거를 찾지 못하면 추측 대신 '정보 없음'을 반환\n"
               "- 모든 호출은 답변 로그로 기록되어 운영 대시보드로 되돌아옵니다 (개선 신호)"))
@@ -372,7 +372,7 @@ def agent_chat(req: ChatRequest):
     _agent_or_404(req.bot_type)
     p = _active_prompt(req.bot_type)
     with db() as con:
-        c = con.execute("SELECT * FROM ragaas_configs WHERE bot_type=?", (req.bot_type,)).fetchone()
+        c = con.execute("SELECT * FROM rag_configs WHERE bot_type=?", (req.bot_type,)).fetchone()
     if not p or not c:
         raise HTTPException(409, "형상이 불완전합니다. ①에이전트 ②프롬프트 ③검색 설정을 모두 등록하세요.")
     cfg = dict(c)
@@ -425,7 +425,7 @@ def list_agents():
         for a in rows:
             p = con.execute("SELECT version, created_at FROM prompts WHERE bot_type=? ORDER BY id DESC LIMIT 1",
                             (a["bot_type"],)).fetchone()
-            c = con.execute("SELECT index_name FROM ragaas_configs WHERE bot_type=?", (a["bot_type"],)).fetchone()
+            c = con.execute("SELECT index_name FROM rag_configs WHERE bot_type=?", (a["bot_type"],)).fetchone()
             stats = con.execute(
                 "SELECT COUNT(*) n, AVG(rating) r FROM chat_logs WHERE bot_type=?", (a["bot_type"],)).fetchone()
             a["prompt_version"] = p["version"] if p else None
@@ -449,7 +449,7 @@ def create_agent(body: AgentCreate):
             "VALUES(?,?,?,?,?,?,?,?,?)",
             (body.bot_type, body.name, body.domain, body.description, body.owner,
              body.icon, body.tint, "개발", now()))
-    return {"ok": True, "bot_type": body.bot_type, "next": ["PUT /itcen/agents/{bot_type}/prompt", "PUT /itcen/agents/{bot_type}/ragaas-config"]}
+    return {"ok": True, "bot_type": body.bot_type, "next": ["PUT /itcen/agents/{bot_type}/prompt", "PUT /itcen/agents/{bot_type}/rag-config"]}
 
 @app.get("/itcen/agents/{bot_type}", tags=["itcen-config"], summary="에이전트 상세")
 def get_agent(bot_type: str):
@@ -457,9 +457,9 @@ def get_agent(bot_type: str):
     with db() as con:
         prompts = [dict(r) for r in con.execute(
             "SELECT id,version,message,author,created_at FROM prompts WHERE bot_type=? ORDER BY id DESC", (bot_type,)).fetchall()]
-        cfg = con.execute("SELECT * FROM ragaas_configs WHERE bot_type=?", (bot_type,)).fetchone()
+        cfg = con.execute("SELECT * FROM rag_configs WHERE bot_type=?", (bot_type,)).fetchone()
     a["prompt_versions"] = prompts
-    a["ragaas_config"] = dict(cfg) if cfg else None
+    a["rag_config"] = dict(cfg) if cfg else None
     return a
 
 @app.put("/itcen/agents/{bot_type}/prompt", tags=["itcen-config"], summary="② System Prompt 등록/개정",
@@ -481,13 +481,13 @@ def list_prompts(bot_type: str):
         return [dict(r) for r in con.execute(
             "SELECT * FROM prompts WHERE bot_type=? ORDER BY id DESC", (bot_type,)).fetchall()]
 
-@app.put("/itcen/agents/{bot_type}/ragaas-config", tags=["itcen-config"], summary="③ 벡터 검색 설정 등록/수정",
-         description="bot_type의 지식 범위(인덱스)와 검색 정책을 등록합니다. GET /agent/ragaas-config/{bot_type}으로 제공됩니다.")
-def put_ragaas_config(bot_type: str, body: RagaasConfigUpdate):
+@app.put("/itcen/agents/{bot_type}/rag-config", tags=["itcen-config"], summary="③ 벡터 검색 설정 등록/수정",
+         description="bot_type의 지식 범위(인덱스)와 검색 정책을 등록합니다. GET /agent/rag-config/{bot_type}으로 제공됩니다.")
+def put_rag_config(bot_type: str, body: RagConfigUpdate):
     _agent_or_404(bot_type)
     with db() as con:
         con.execute(
-            "INSERT INTO ragaas_configs(bot_type,index_name,top_k,similarity_threshold,bm25_weight,"
+            "INSERT INTO rag_configs(bot_type,index_name,top_k,similarity_threshold,bm25_weight,"
             "rerank,citation_required,pii_masking,multi_query,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?) "
             "ON CONFLICT(bot_type) DO UPDATE SET index_name=excluded.index_name, top_k=excluded.top_k, "
             "similarity_threshold=excluded.similarity_threshold, bm25_weight=excluded.bm25_weight, "
@@ -509,7 +509,7 @@ def delete_agent(bot_type: str):
     with db() as con:
         con.execute("DELETE FROM agents WHERE bot_type=?", (bot_type,))
         con.execute("DELETE FROM prompts WHERE bot_type=?", (bot_type,))
-        con.execute("DELETE FROM ragaas_configs WHERE bot_type=?", (bot_type,))
+        con.execute("DELETE FROM rag_configs WHERE bot_type=?", (bot_type,))
     return {"ok": True}
 
 # ============================================================
@@ -551,8 +551,8 @@ def _run_pipeline(source_id: int):
             "UPDATE knowledge_sources SET stage='완료', progress=100, chunks=?, freshness=100, last_sync=? WHERE id=?",
             (new_chunks, now(), source_id))
 
-@app.post("/itcen/knowledge/sources/{source_id}/sync", tags=["itcen-knowledge"], summary="RAGaaS Index 동기화 실행",
-          description="추출→전처리→가공→적재 파이프라인을 실행해 RAGaaS Index와 동기화합니다. 진행 상황은 소스 목록 조회로 확인합니다.")
+@app.post("/itcen/knowledge/sources/{source_id}/sync", tags=["itcen-knowledge"], summary="RAG Index 동기화 실행",
+          description="추출→전처리→가공→적재 파이프라인을 실행해 RAG Index와 동기화합니다. 진행 상황은 소스 목록 조회로 확인합니다.")
 def sync_source(source_id: int, background: BackgroundTasks):
     with db() as con:
         r = con.execute("SELECT * FROM knowledge_sources WHERE id=?", (source_id,)).fetchone()
@@ -571,7 +571,7 @@ def get_rules():
     with db() as con:
         return [r["rule"] for r in con.execute("SELECT rule FROM pipeline_rules ORDER BY id").fetchall()]
 
-@app.get("/itcen/knowledge/indexes", tags=["itcen-knowledge"], summary="RAGaaS Index 현황")
+@app.get("/itcen/knowledge/indexes", tags=["itcen-knowledge"], summary="RAG Index 현황")
 def list_indexes():
     with db() as con:
         rows = con.execute(
@@ -580,7 +580,7 @@ def list_indexes():
         out = []
         for r in rows:
             bots = [b["bot_type"] for b in con.execute(
-                "SELECT bot_type FROM ragaas_configs WHERE index_name=?", (r["index_name"],)).fetchall()]
+                "SELECT bot_type FROM rag_configs WHERE index_name=?", (r["index_name"],)).fetchall()]
             out.append({**dict(r), "used_by": bots})
     return out
 
