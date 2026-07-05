@@ -6,6 +6,7 @@
 # Swagger UI: http://localhost:8000/docs
 # ============================================================
 import json
+import os
 import random
 import re
 import sqlite3
@@ -22,7 +23,9 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 ROOT = Path(__file__).resolve().parent.parent
-DB_PATH = Path(__file__).resolve().parent / "itcen.db"
+# Vercel 서버리스: 파일시스템이 읽기 전용이므로 DB는 /tmp 에 생성 (콜드스타트마다 재시드)
+IS_VERCEL = bool(os.environ.get("VERCEL"))
+DB_PATH = Path("/tmp/itcen.db") if IS_VERCEL else Path(__file__).resolve().parent / "itcen.db"
 _db_lock = threading.Lock()
 
 # ------------------------------------------------------------
@@ -540,7 +543,7 @@ def _run_pipeline(source_id: int):
                             (stage, progress, source_id))
             if stage == "완료":
                 break
-            time.sleep(0.35)
+            time.sleep(0.03 if IS_VERCEL else 0.35)
     with db() as con:
         r = con.execute("SELECT docs FROM knowledge_sources WHERE id=?", (source_id,)).fetchone()
         new_chunks = (r["docs"] or 10) * 4
@@ -555,7 +558,11 @@ def sync_source(source_id: int, background: BackgroundTasks):
         r = con.execute("SELECT * FROM knowledge_sources WHERE id=?", (source_id,)).fetchone()
     if not r:
         raise HTTPException(404, "데이터 소스를 찾을 수 없습니다.")
-    background.add_task(_run_pipeline, source_id)
+    if IS_VERCEL:
+        # 서버리스는 응답 후 실행이 동결될 수 있어 파이프라인을 동기 실행 (~1초)
+        _run_pipeline(source_id)
+    else:
+        background.add_task(_run_pipeline, source_id)
     return {"ok": True, "id": source_id, "stages": PIPE_STAGES}
 
 @app.get("/itcen/knowledge/rules", tags=["itcen-knowledge"], summary="파이프라인 출력 규칙",
@@ -660,7 +667,9 @@ def ops_signals():
 # ------------------------------------------------------------
 # 정적 파일 (콘솔 웹) — API 라우트 뒤에 마운트
 # ------------------------------------------------------------
-app.mount("/", StaticFiles(directory=ROOT, html=True), name="console")
+# Vercel에서는 정적 파일을 CDN이 서빙하므로 마운트 생략
+if not IS_VERCEL:
+    app.mount("/", StaticFiles(directory=ROOT, html=True), name="console")
 
 if __name__ == "__main__":
     import uvicorn
