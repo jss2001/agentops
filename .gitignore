@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+
+# Runtime DB (서버 기동 시 자동 생성/시드)
+server/*.db
+
+# 백업/임시 산출물
+proposal/*.bak.pptx
+*.tmp
+
+# MS Office 잠금/소유자 임시 파일
+~$*
+
+# OS
+Thumbs.db
+.DS_Store
