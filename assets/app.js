@@ -156,8 +156,13 @@ VIEWS.dashboard = async () => {
 <div class="view">
   <div class="banner" style="margin-bottom:22px">
     <h2>One Console AI — 하나의 콘솔</h2>
-    <p style="max-width:720px">글로벌 제조 대기업의 AI Agent 프로젝트를 거듭 수행하며 같은 장면을 반복해서 마주했습니다. 프로젝트가 시작될 때마다 문서 전처리 파이프라인을 새로 만들고, 프롬프트와 검색 설정을 처음부터 다시 맞추는 일 — <b>One Console AI는 이 현장 경험에서 출발해, 실제 운영으로 실효성이 검증된 방식을 표준 플랫폼으로 제품화했습니다.</b></p>
-    <p style="max-width:720px;margin-top:12px">흩어진 사내 지식을 <b>RAG 파이프라인</b>으로 정제하고, <b>Agent Config</b>로 봇의 성격과 검색 범위를 빚어 <b>AI Agent로 수렴</b>합니다. 운영 신호는 다시 콘솔로 돌아와 다음 개선의 출발점이 됩니다.</p>
+    <p style="max-width:720px">같은 구조의 전처리, 같은 기능의 도메인만 다른Agent가 사내 프로젝트마다 반복 제작됩니다 — 운영 체계 부재가 만든 구조적 결과입니다.
+    삼성전자 AI 프로젝트를 3회 이상 수행한 결과, 과정은 늘 동일했습니다.
+</b></p>
+    <p style="max-width:720px;margin-top:12px">AI Agent 구축보다 더 어려운 것은, 지속적인 운영입니다.
+프로젝트마다 반복되는 전처리 과정 — 전처리 시간만 줄여도 구축 속도는 빨라집니다.
+형상 관리되지 않는 프롬프트 — 어떻게 운영되고 있는지 모르는 수많은 Agent들이 남습니다.
+</p>
     <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;position:relative">
       <span class="chip" style="background:rgba(255,255,255,.14);color:#e8eaff">✓ 실제 운영 환경에서 검증된 모델</span>
       <span class="chip" style="background:rgba(255,255,255,.14);color:#e8eaff">✓ 프로젝트마다 반복되던 전처리 제거</span>
