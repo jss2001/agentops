@@ -177,7 +177,7 @@ def content(num, title, lead=None, mode="white"):
     ink = WHITE if dark else INK
     sub = GRAY if dark else MUT48
     text(s, ML, Inches(0.52), Inches(8.0), Inches(0.26),
-         [("One Console AI — Enterprise AI AgentOps Platform", 11, False, sub)])
+         [("Enterprise AI AgentOps Platform - One Console AI", 11, False, sub)])
     text(s, ML, Inches(0.84), Inches(0.6), Inches(0.42), [(num, 24, True, BLUE if not dark else BLUE_D)])
     text(s, ML + Inches(0.66), Inches(0.84), Inches(9.5), Inches(0.42), [(title, 24, True, ink)])
     text(s, SW - Inches(1.6), Inches(0.9), Inches(1.0), Inches(0.3),

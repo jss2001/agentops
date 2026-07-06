@@ -1,4 +1,4 @@
-/* ============ One Console AI · App (API 연동) ============ */
+/* ============ Enterprise AI AgentOps Platform · App (API 연동) ============ */
 
 /* ---------- Icon system ---------- */
 const ICONS = {
@@ -155,14 +155,15 @@ VIEWS.dashboard = async () => {
   return `
 <div class="view">
   <div class="banner" style="margin-bottom:22px">
-    <h2>One Console AI — 하나의 콘솔</h2>
-    <p style="max-width:720px">같은 구조의 전처리, 같은 기능의 도메인만 다른Agent가 사내 프로젝트마다 반복 제작됩니다 — 운영 체계 부재가 만든 구조적 결과입니다.
-    삼성전자 AI 프로젝트를 3회 이상 수행한 결과, 과정은 늘 동일했습니다.
-</b></p>
-    <p style="max-width:720px;margin-top:12px">AI Agent 구축보다 더 어려운 것은, 지속적인 운영입니다.
-프로젝트마다 반복되는 전처리 과정 — 전처리 시간만 줄여도 구축 속도는 빨라집니다.
-형상 관리되지 않는 프롬프트 — 어떻게 운영되고 있는지 모르는 수많은 Agent들이 남습니다.
-</p>
+    <h2>Enterprise AI AgentOps Platform</h2>
+    <p style="max-width:760px">같은 구조의 전처리, 같은 기능의 도메인만 다른 Agent가 사내 프로젝트마다 반복 제작됩니다 — 운영 체계 부재가 만든 구조적 결과입니다.<br>
+    <b style="color:#ffe28a">⇒ AI Ready Data 필요</b><br>
+    AI 프로젝트를 3회 이상 수행한 결과, 과정은 늘 동일했습니다.</p>
+    <p style="max-width:760px;margin-top:14px">AI Agent 구축보다 더 어려운 것은, 지속적인 운영입니다.<br>
+    프로젝트마다 반복되는 전처리 과정 — 전처리 시간만 줄여도 구축 속도는 빨라집니다.<br>
+    형상 관리되지 않는 프롬프트 — 어떻게 운영되고 있는지 모르는 수많은 Agent들이 남습니다.<br>
+    <b style="color:#ffe28a">⇒ AgentOps 플랫폼 필요</b>
+    <span style="opacity:.75;font-size:.9em">(Feat. 삼성전자 레퍼런스 참조)</span></p>
     <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;position:relative">
       <span class="chip" style="background:rgba(255,255,255,.14);color:#e8eaff">✓ 실제 운영 환경에서 검증된 모델</span>
       <span class="chip" style="background:rgba(255,255,255,.14);color:#e8eaff">✓ 프로젝트마다 반복되던 전처리 제거</span>
